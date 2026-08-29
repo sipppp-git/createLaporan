@@ -1,0 +1,41 @@
+/* Sembunyikan elemen UI Streamlit saat dicetak (Ctrl+P) */
+@media print {
+    header, [data-testid="stSidebar"], [data-testid="stToolbar"], button {
+        display: none !important;
+    }
+    .main .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }
+}
+
+/* Style Tabel Laporan Resmi */
+.tabel-laporan {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 11pt;
+    margin-top: 15px;
+    margin-bottom: 25px;
+    color: #000;
+}
+.tabel-laporan th, .tabel-laporan td {
+    border: 1px solid #000000 !important;
+    padding: 8px 10px;
+    vertical-align: middle;
+}
+.tabel-laporan th {
+    background-color: #f2f2f2 !important;
+    text-align: center;
+    font-weight: bold;
+}
+.tabel-laporan td.center {
+    text-align: center;
+}
+
+/* Mencegah tabel terpotong di tengah halaman saat dicetak */
+@media print {
+    .tabel-laporan { page-break-inside: auto; }
+    .tabel-laporan tr { page-break-inside: avoid; page-break-after: auto; }
+    .tabel-laporan th { -webkit-print-color-adjust: exact; }
+}
