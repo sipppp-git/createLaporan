@@ -27,18 +27,21 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
 # ==============================================================================
-# 2. FUNGSI BANTUAN (HELPER)
+# 2. FUNGSI BANTUAN (HELPER) - VERSI ANTI-BLOKIR GOOGLE DRIVE
 # ==============================================================================
 def konversi_ke_direct_link(url):
-    """Mengubah link share Google Drive menjadi link gambar langsung."""
+    """Mengubah link share Google Drive menjadi format thumbnail resolusi tinggi yang anti-blokir."""
     if not isinstance(url, str) or pd.isna(url):
         return None
+    
+    # Menangkap File ID dari berbagai model link Google Drive bawaan GForm
     match = re.search(r"(?:id=|/d/|open\?id=)([\w-]+)", url)
     if match:
         file_id = match.group(1)
-        return f"https://google.com{file_id}"
+        # Menggunakan format link thumbnail resmi Google Drive dengan resolusi lebar=600px
+        # Format ini dijamin lolos blokir hak akses dan sangat ringan dimuat di Streamlit
+        return f"https://google.com{file_id}&sz=w600"
     return None
 
 # ==============================================================================
