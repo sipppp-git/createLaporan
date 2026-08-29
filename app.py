@@ -91,7 +91,12 @@ if not df_lapor.empty and not df_total.empty:
             st.markdown(f"<h5 style='text-align: center; color: #d84315; font-size: 16px; font-weight: bold;'>{kab.replace('KAB. ', '')}</h5>", unsafe_allow_html=True)
             
             # Render Grafik
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(
+                fig, 
+                use_container_width=True, 
+                config={'displayModeBar': False},
+                key=kab
+            )
             
             # Subtitle Jumlah (dari Total)
             st.markdown(f"<p style='text-align: center; color: #555; font-weight: bold; margin-top: -15px;'>{lapor} (dari {total})</p>", unsafe_allow_html=True)
