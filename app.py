@@ -9,8 +9,8 @@ st.title("📊 Dasbor Kepatuhan Pelaporan LCS")
 # 1. KONEKSI DATA
 # ==============================================================================
 conn = st.connection("gsheets", type=GSheetsConnection)
-df_lapor = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet_lapor"], ttl=60)
-df_total = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet_total"], ttl=600) 
+df_lapor = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet_lcs"], ttl=60)
+df_total = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet_penyuluh"], ttl=600) 
 
 if not df_lapor.empty and not df_total.empty:
     
