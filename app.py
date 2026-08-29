@@ -132,7 +132,7 @@ if not df_penyuluh.empty:
                 if direct_url:
                     list_eviden_bersih.append(direct_url)
 
-    # --- GALERI TAMPILAN FOTO DINAMIS (OTOMATIS BERTAMBAH KOTAKNYA) ---
+    # --- GALERI TAMPILAN FOTO DINAMIS (VERSI GAMBAR BESAR & RAPI) ---
     st.markdown("#### 📸 LAMPIRAN BUKTI DOKUMENTASI LCS")
 
     if len(list_eviden_bersih) > 0:
@@ -143,11 +143,17 @@ if not df_penyuluh.empty:
             # Membagi foto selang-seling ke kolom kiri (0) dan kanan (1)
             target_kolom = indeks % 2
             with grid_kolom[target_kolom]:
-                # Menampilkan gambar dengan caption nomor urut eviden
-                st.image(
-                    url_langsung,
-                    caption=f"Eviden Dokumentasi ke-{indeks + 1}",
-                    use_container_width=True,
+                # Menampilkan gambar menggunakan HTML agar ukurannya besar dan pas di kotak
+                st.markdown(
+                    f"""
+                    <div style="margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; border-radius: 5px; text-align: center;">
+                        <img src="{url_langsung}" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 3px;">
+                        <p style="margin-top: 8px; font-family: 'Times New Roman', serif; font-size: 10pt; font-weight: bold; color: #333;">
+                            Eviden Dokumentasi ke-{indeks + 1}
+                        </p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
                 )
     else:
         st.info("Tidak ada lampiran gambar eviden untuk bulan ini.")
