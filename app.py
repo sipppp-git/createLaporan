@@ -28,10 +28,10 @@ st.markdown(
 )
 
 # ==============================================================================
-# 2. FUNGSI BANTUAN (HELPER) - VERSI ANTI-BLOKIR GOOGLE DRIVE
+# 2. FUNGSI BANTUAN (HELPER) - PERBAIKAN LINK GOOGLE DRIVE
 # ==============================================================================
 def konversi_ke_direct_link(url):
-    """Mengubah link share Google Drive menjadi format thumbnail resolusi tinggi yang anti-blokir."""
+    """Mengubah link share Google Drive menjadi format thumbnail resolusi tinggi."""
     if not isinstance(url, str) or pd.isna(url):
         return None
     
@@ -39,9 +39,9 @@ def konversi_ke_direct_link(url):
     match = re.search(r"(?:id=|/d/|open\?id=)([\w-]+)", url)
     if match:
         file_id = match.group(1)
-        # Menggunakan format link thumbnail resmi Google Drive dengan resolusi lebar=600px
-        # Format ini dijamin lolos blokir hak akses dan sangat ringan dimuat di Streamlit
-        return f"https://google.com{file_id}&sz=w600"
+        # PERBAIKAN: Menggunakan endpoint resmi drive.google.com untuk thumbnail
+        # sz=w800 memastikan gambar cukup tajam saat dicetak ke PDF
+        return f"https://drive.google.com/thumbnail?id={file_id}&sz=w800"
     return None
 
 # ==============================================================================
