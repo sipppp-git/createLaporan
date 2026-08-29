@@ -88,8 +88,9 @@ if not df_penyuluh.empty:
     st.markdown(
         """
         <div style="text-align: center; font-family: 'Times New Roman', serif; line-height: 1.6;">
-            <h3 style="margin: 0; font-size: 16pt; font-weight: bold;">LAPORAN SKP PENDERASAN INFORMASI PEMBANGUNAN PERTANIAN</h3>
-            <h3 style="margin: 0; font-size: 14pt; font-weight: bold;">LIGHTHOUSE COMMAND CENTER (LCS)</h3>
+            <h2 style="margin: 0; font-size: 16pt; font-weight: bold;>LAPORAN KEGIATAN</h2>
+            <h3 style="margin: 0; font-size: 16pt; font-weight: bold;">TUGAS JABATAN PENYULUH PERTANIAN SESUAI JENJANG</h3>
+            <h3 style="margin: 0; font-size: 14pt; font-weight: bold;">PENDERASAN MATERI DAN INFORMASI PEMBANGUNAN PERTANIAN</h3>
             <h4 style="margin: 0; font-size: 12pt; font-weight: bold; text-transform: uppercase;">PERIODE: AGUSTUS 2026</h4>
         </div>
         <hr style="border: 1px solid black; margin-top: 10px; margin-bottom: 20px;">
@@ -133,7 +134,7 @@ if not df_penyuluh.empty:
                     list_eviden_bersih.append(direct_url)
 
     # --- GALERI TAMPILAN FOTO DINAMIS (VERSI GAMBAR BESAR & RAPI) ---
-    st.markdown("#### 📸 LAMPIRAN BUKTI DOKUMENTASI LCS")
+    st.markdown("#### LAMPIRAN EVIDEN LCS")
 
     if len(list_eviden_bersih) > 0:
         # Membuat grid 2 kolom secara dinamis ke bawah
