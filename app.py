@@ -2,87 +2,82 @@ import streamlit as st
 import pandas as pd
 from streamlit_gsheets import GSheetsConnection
 
-# Import fungsi dari file helpers.py
-from helpers import konversi_ke_direct_link, buat_tabel_kegiatan_html
+# Import fungsi dari helpers.py
+from helpers import konversi_ke_direct_link, buat_tabel_kegiatan_html, buat_grid_eviden_html
 
 st.set_page_config(page_title="Cetak SKP LCS Agustus", layout="wide")
 
-# Membaca file CSS eksternal dan menerapkannya
+# Muat CSS
 with open("style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# Koneksi & Ambil Data
+# Koneksi ke GSheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 url_spreadsheet = st.secrets["connections"]["gsheets"]["spreadsheet"]
 df = conn.read(spreadsheet=url_spreadsheet, ttl=60)
 df["Tanggal"] = df["Tanggal"].astype(str)
 
-# Sidebar
-st.sidebar.title("🎮 Panel Kontrol Admin")
+st.sidebar.title("🎮 Panel Kontrol")
 daftar_penyuluh = df["Nama"].unique()
 nama_terpilih = st.sidebar.selectbox("Pilih Nama Penyuluh:", daftar_penyuluh)
 
-st.sidebar.warning("💡 Tekan **Ctrl + P** untuk cetak PDF. Pastikan 'Background graphics' dicentang!")
-
-# Filter Data
+# Filter Data (Bisa menghasilkan lebih dari 1 baris jika ada beberapa tanggal)
 df_penyuluh = df[df["Nama"] == nama_terpilih]
 
 if not df_penyuluh.empty:
-    row = df_penyuluh.iloc[0]
+    # Ambil info identitas dari baris pertama saja
+    info = df_penyuluh.iloc[0]
 
-    # Kop Surat
+    # --- KOP SURAT ---
     st.markdown(
         """
-        <div style="text-align: center; font-family: 'Times New Roman', serif; line-height: 1.6;">
-            <h3 style="margin: 0; font-size: 18pt; font-weight: bold;">LAPORAN KEGIATAN</h3>
+        <div style="text-align: center; font-family: 'Times New Roman', serif; line-height: 1.5;">
+            <h3 style="margin: 0; font-size: 16pt; font-weight: bold;">LAPORAN KEGIATAN</h3>
+            <h3 style="margin: 0; font-size: 14pt; font-weight: bold;">TUGAS JABATAN PENYULUH PERTANIAN SESUAI JENJANG</h3>
             <h3 style="margin: 0; font-size: 14pt; font-weight: bold;">PENDERASAN MATERI DAN INFORMASI PEMBANGUNAN PERTANIAN</h3>
-            <h4 style="margin: 0; font-size: 12pt; font-weight: bold;">PERIODE: AGUSTUS 2026</h4>
+            <h4 style="margin: 0; font-size: 12pt; font-weight: bold;">PERIODE AGUSTUS 2026</h4>
         </div>
-        <hr style="border: 1px solid black; margin-top: 10px; margin-bottom: 20px;">
+        <hr style="border: 1.5px solid black; margin-top: 15px; margin-bottom: 20px;">
         """,
         unsafe_allow_html=True,
     )
 
-    # Identitas
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"**Nama Penyuluh:** {row['Nama']}")
-        st.markdown(f"**NIP:** {row['NIP']}")
-    with col2:
-        st.markdown(f"**Kabupaten/Wilayah:** {row.get('Kabupaten', '-')}")
-        st.markdown(f"**Tanggal Cetak:** {row['Tanggal']}")
+    # --- IDENTITAS (Format tabel tanpa garis) ---
+    st.markdown(
+        f"""
+        <table style="width: 100%; font-family: 'Times New Roman', serif; font-size: 12pt; border: none; margin-bottom: 20px;">
+            <tr><td style="width: 150px; border: none; padding: 3px;">Nama</td><td style="width: 10px; border: none;">:</td><td style="border: none;">{info['Nama']}</td></tr>
+            <tr><td style="border: none; padding: 3px;">NIP</td><td style="border: none;">:</td><td style="border: none;">{info['NIP']}</td></tr>
+            <tr><td style="border: none; padding: 3px;">Kabupaten</td><td style="border: none;">:</td><td style="border: none;">{info.get('Kabupaten', '-')}</td></tr>
+        </table>
+        """,
+        unsafe_allow_html=True
+    )
 
-    # Tabel Rincian (Memanggil fungsi dari helpers.py)
-    st.markdown("#### B. RINCIAN PELAKSANAAN TUGAS")
-    st.markdown(buat_tabel_kegiatan_html(df_penyuluh), unsafe_allow_html=True)
+    # --- LOOPING EVIDEN PER TANGGAL ---
+    # Looping setiap baris di dataframe yang sudah difilter
+    for index, row in df_penyuluh.iterrows():
+        tanggal_kegiatan = row['Tanggal']
+        
+        # Panggil fungsi pembuat grid 10 kotak dari helpers.py
+        grid_html = buat_grid_eviden_html(row, tanggal_kegiatan)
+        st.markdown(grid_html, unsafe_allow_html=True)
 
-    # Filter Eviden Foto
-    list_eviden = []
-    for i in range(1, 11):
-        col_name = f"Ev{i}"
-        if col_name in df.columns:
-            url_foto = row[col_name]
-            if pd.notna(url_foto) and str(url_foto).strip().lower() != "nan":
-                direct_url = konversi_ke_direct_link(url_foto)
-                if direct_url:
-                    list_eviden.append(direct_url)
-
-    # Galeri Eviden
-    st.markdown("#### LAMPIRAN EVIDEN LCS")
-    if list_eviden:
-        grid = st.columns(2)
-        for idx, url in enumerate(list_eviden):
-            with grid[idx % 2]:
-                st.markdown(
-                    f"""
-                    <div style="margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; text-align: center;">
-                        <img src="{url}" style="width: 100%; max-height: 400px; object-fit: contain;">
-                        <p style="margin-top: 8px; font-family: 'Times New Roman', serif;">Eviden ke-{idx + 1}</p>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-    else:
-        st.info("Tidak ada lampiran gambar eviden.")
+    # --- LEMBAR TANDA TANGAN ---
+    st.write("")
+    st.write("")
+    col_kosong, col_ttd = st.columns([2, 1])
+    with col_ttd:
+        st.markdown(
+            f"""
+            <div style="font-family: 'Times New Roman', serif; font-size: 12pt; text-align: left; page-break-inside: avoid;">
+                Papua Pegunungan, 31 Agustus 2026<br>
+                Penyuluh Pertanian,<br><br><br><br><br>
+                <b><u>{info['Nama']}</u></b><br>
+                NIP. {info['NIP']}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 else:
     st.error("Data tidak ditemukan.")
