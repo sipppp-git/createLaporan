@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 
 # ==============================================================================
 # 1. ATUR HALAMAN & TAMPILAN CETAK (CSS CUSTOM)
@@ -40,29 +41,21 @@ def konversi_ke_direct_link(url):
         return f"https://google.com{file_id}"
     return None
 
+# ==============================================================================
+# 3. KONEKSI LANGSUNG KE GOOGLE SHEETS (LIVE DATA)
+# ==============================================================================
 
-# ==============================================================================
-# 3. CONTOH SIMULASI DATAFRAME (Hapus bagian ini jika df Anda sudah di-load)
-# ==============================================================================
-# Jika df sudah di-load dari file excel sebelumnya, abaikan baris simulasi ini.
-if "df" not in locals() and "df" not in globals():
-    data = {
-        "Tanggal": ["2026-08-21 20:14:02.238"],
-        "Nama": ["Agustinus Tekege, A.Md"],
-        "NIP": ["197308072006051003"],
-        "Kabupaten": ["Provinsi"],
-        "Ev1": ["https://google.com..."],
-        "Ev2": ["https://google.com..."],
-        "Ev3": [None],
-        "Ev4": [None],
-        "Ev5": [None],
-        "Ev6": [None],
-        "Ev7": [None],
-        "Ev8": [None],
-        "Ev9": [None],
-        "Ev10": [None],
-    }
-    df = pd.DataFrame(data)
+# Membuat objek koneksi database ke Google Sheets
+conn = st.connection("gsheets", type=GSheetsConnection)
+
+# Ambil URL Google Sheets dari fitur Secrets Streamlit (kita atur di Langkah 4)
+url_spreadsheet = st.secrets["connections"]["gsheets"]["spreadsheet"]
+
+# Baca data secara live. Kita set ttl=60 artinya data otomatis di-refresh tiap 60 detik jika ada input baru
+df = conn.read(spreadsheet=url_spreadsheet, ttl=60)
+
+# Pastikan tipe data kolom Tanggal diubah ke string agar tidak error saat dibaca oleh filter
+df["Tanggal"] = df["Tanggal"].astype(str)
 
 # ==============================================================================
 # 4. SIDEBAR PANEL KONTROL ADMIN
