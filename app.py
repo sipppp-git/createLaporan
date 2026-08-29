@@ -88,7 +88,7 @@ if not df_penyuluh.empty:
     st.markdown(
         """
         <div style="text-align: center; font-family: 'Times New Roman', serif; line-height: 1.6;">
-            <h2 style="margin: 0; font-size: 16pt; font-weight: bold;>LAPORAN KEGIATAN</h2>
+            <h3 style="margin: 0; font-size: 16pt; font-weight: bold;>LAPORAN KEGIATAN</h3>
             <h3 style="margin: 0; font-size: 16pt; font-weight: bold;">TUGAS JABATAN PENYULUH PERTANIAN SESUAI JENJANG</h3>
             <h3 style="margin: 0; font-size: 14pt; font-weight: bold;">PENDERASAN MATERI DAN INFORMASI PEMBANGUNAN PERTANIAN</h3>
             <h4 style="margin: 0; font-size: 12pt; font-weight: bold; text-transform: uppercase;">PERIODE: AGUSTUS 2026</h4>
