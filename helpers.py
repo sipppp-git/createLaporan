@@ -45,3 +45,39 @@ def buat_tabel_kegiatan_html(df_penyuluh):
         """
     html_tabel += "</tbody></table>"
     return html_tabel
+
+def buat_grid_eviden_html(row, tanggal):
+    """
+    Menghasilkan grid 10 kotak (5 baris x 2 kolom) untuk eviden per tanggal.
+    Kotak akan tetap dirender meskipun kosong.
+    """
+    html = f"<div style='margin-top: 30px;'><h4 style='font-family: \"Times New Roman\", serif; font-weight: bold;'>Tanggal: {tanggal}</h4>"
+    html += '<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">'
+    
+    # Kumpulkan 10 status link eviden
+    links = []
+    for i in range(1, 11):
+        col = f"Ev{i}"
+        url = row.get(col, None)
+        if pd.notna(url) and str(url).strip().lower() != "nan":
+            direct = konversi_ke_direct_link(url)
+            links.append(direct if direct else "")
+        else:
+            links.append("")
+            
+    # Buat 5 baris, masing-masing 2 kolom
+    for r in range(5):
+        html += "<tr>"
+        for c in range(2):
+            idx = r * 2 + c
+            img_url = links[idx]
+            if img_url:
+                # Sel berisi gambar
+                html += f'<td style="width: 50%; border: 1px solid black; padding: 8px; text-align: center; height: 350px; vertical-align: middle;"><img src="{img_url}" style="max-width: 100%; max-height: 330px; object-fit: contain;"></td>'
+            else:
+                # Sel kosong
+                html += f'<td style="width: 50%; border: 1px solid black; padding: 8px; text-align: center; height: 350px; vertical-align: middle; background-color: #f9f9f9; color: #999; font-family: \'Times New Roman\', serif;">(Tidak ada lampiran {idx+1})</td>'
+        html += "</tr>"
+        
+    html += "</table></div>"
+    return html
