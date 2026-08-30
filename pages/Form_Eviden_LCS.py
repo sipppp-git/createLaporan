@@ -12,7 +12,7 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 url_lapor = st.secrets["connections"]["gsheets"]["form_eviden_lcs"]
 
 # Taruh URL dari Apps Script di sini
-WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzXwlFCZdVIATACGWELC3ofh_-YPDJ6oB64hOwm9VXkTgk2tn1jB8Qzgj4i82_wSLVX/exec"
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbySh0R9TjYvVL-6qFCuYt9RZj3H4Ef7G883w7YdSauIB3Cb-UKydIUDwt20EsH_HFAb/exec"
 
 # 2. Form Input
 with st.form(key="form_eviden", clear_on_submit=True):
