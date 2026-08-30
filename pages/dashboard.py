@@ -3,28 +3,14 @@ import pandas as pd
 import plotly.graph_objects as go
 from streamlit_gsheets import GSheetsConnection
 
-st.set_page_config(page_title="Dasbor LCS", layout="wide")
+# Anda bisa menyematkan ikon Material langsung di dalam teks judul
+st.title(":material/bar_chart: Dasbor LCS")
 
 # ==============================================================================
-# 1. JUDUL & KONEKSI DATA
+# 1. KONEKSI DATA
 # ==============================================================================
-ikon_svg = """
-<svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#d84315" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <line x1="18" y1="20" x2="18" y2="10"></line>
-    <line x1="12" y1="20" x2="12" y2="4"></line>
-    <line x1="6" y1="20" x2="6" y2="14"></line>
-</svg>
-"""
-
-st.markdown(
-    f"""<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-{ikon_svg}
-<h1 style="margin: 0; font-size: 2.2rem; font-weight: bold;">Dasbor LCS</h1>
-</div>""",
-    unsafe_allow_html=True
-)
-
 conn = st.connection("gsheets", type=GSheetsConnection)
+
 
 # Menggunakan nama kunci terbaru sesuai dengan file secrets.toml Anda
 url_lapor = st.secrets["connections"]["gsheets"]["spreadsheet_lcs"]
