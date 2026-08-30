@@ -29,8 +29,8 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 url_lapor = st.secrets["connections"]["gsheets"]["spreadsheet_lapor"]
 url_total = st.secrets["connections"]["gsheets"]["spreadsheet_total"]
 
-df_lapor = conn.read(spreadsheet=url_lapor, ttl=60)
-df_total = conn.read(spreadsheet=url_total, ttl=600) 
+df_lapor = conn.read(spreadsheet=url_lcs, ttl=60)
+df_total = conn.read(spreadsheet=url_penyuluh, ttl=600) 
 
 # ==============================================================================
 # 2. LOGIKA PERHITUNGAN (VALIDASI MASTER DATA)
