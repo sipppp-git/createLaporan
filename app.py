@@ -120,7 +120,7 @@ if not df_lapor.empty and not df_total.empty:
             )
             
             # 2. NAMA KABUPATEN DI BAWAH DIAGRAM
-            st.markdown(f"<h5 style='text-align: center; color: #d84315; font-size: 15px; font-weight: bold; margin-bottom: 0px;'>{kab.replace('KAB. ', '')}</h5>", unsafe_allow_html=True)
+            st.markdown(f"<h5 style='text-align: center; color: #d84315; font-size: 15px; font-weight: bold; margin-bottom: 0px; margin-top: -15px;'>{kab.replace('KAB. ', '')}</h5>", unsafe_allow_html=True)
             
             # 3. KETERANGAN JUMLAH DI BAGIAN PALING BAWAH
             st.markdown(f"<p style='text-align: center; color: #555; font-weight: bold; font-size: 14px; margin-top: 2px;'>{lapor} (dari {total})</p>", unsafe_allow_html=True)
