@@ -15,12 +15,10 @@ ikon_svg = """
 
 # Render SVG dan teks berdampingan menggunakan st.markdown
 st.markdown(
-    f"""
-    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-        {ikon_svg}
-        <h1 style="margin: 0; font-size: 2.2rem; font-weight: bold;">Dasbor Pelaporan LCS</h1>
-    </div>
-    """,
+    f"""<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+    {ikon_svg}
+    <h1 style="margin: 0; font-size: 2.2rem; font-weight: bold;">Dasbor Pelaporan LCS</h1>
+    </div>""",
     unsafe_allow_html=True
 )
 
