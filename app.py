@@ -26,8 +26,8 @@ st.markdown(
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-url_lapor = st.secrets["connections"]["gsheets"]["spreadsheet_lapor"]
-url_total = st.secrets["connections"]["gsheets"]["spreadsheet_total"]
+url_lapor = st.secrets["connections"]["gsheets"]["spreadsheet_lcs"]
+url_total = st.secrets["connections"]["gsheets"]["spreadsheet_penyuluh"]
 
 df_lapor = conn.read(spreadsheet=url_lcs, ttl=60)
 df_total = conn.read(spreadsheet=url_penyuluh, ttl=600) 
