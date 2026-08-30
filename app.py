@@ -103,7 +103,7 @@ if not df_lapor.empty and not df_total.empty:
 
         fig.update_layout(
             showlegend=False,
-            margin=dict(t=10, b=10, l=10, r=10),
+            margin=dict(t=5, b=5, l=5, r=5),
             height=200,
             # Menambahkan teks persentase tebal di tengah lubang
             annotations=[dict(text=f"<b>{persen:g}%</b>", x=0.5, y=0.5, font_size=24, font_color="#d84315", showarrow=False)]
