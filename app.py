@@ -18,7 +18,7 @@ st.markdown(
     f"""
     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
         {ikon_svg}
-        <h1 style="margin: 0; font-size: 2.2rem; font-weight: bold;">Dasbor Kepatuhan Pelaporan LCS</h1>
+        <h1 style="margin: 0; font-size: 2.2rem; font-weight: bold;">Dasbor Pelaporan LCS</h1>
     </div>
     """,
     unsafe_allow_html=True
