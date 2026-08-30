@@ -1,10 +1,13 @@
-import plotly.graph_objects as go
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 from streamlit_gsheets import GSheetsConnection
 
 st.set_page_config(page_title="Dasbor LCS", layout="wide")
-# Siapkan kode SVG Anda (ini contoh ikon grafik batang sederhana)
+
+# ==============================================================================
+# 1. JUDUL & KONEKSI DATA
+# ==============================================================================
 ikon_svg = """
 <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#d84315" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <line x1="18" y1="20" x2="18" y2="10"></line>
@@ -13,31 +16,27 @@ ikon_svg = """
 </svg>
 """
 
-# Render SVG dan teks berdampingan menggunakan st.markdown
 st.markdown(
-f"""<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+    f"""<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
 {ikon_svg}
 <h1 style="margin: 0; font-size: 2.2rem; font-weight: bold;">Dasbor Pelaporan LCS</h1>
 </div>""",
     unsafe_allow_html=True
 )
 
-# ==============================================================================
-# 1. KONEKSI DATA
-# ==============================================================================
 conn = st.connection("gsheets", type=GSheetsConnection)
-df_lapor = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet_lcs"], ttl=60)
-df_total = conn.read(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet_penyuluh"], ttl=600) 
 
-if not df_lapor.empty and not df_total.empty:
-    
-    # Samakan format teks agar proses penggabungan presisi (huruf besar & tanpa spasi lebih)
-    df_lapor["Kabupaten"] = df_lapor["Kabupaten"].astype(str).str.upper().str.strip()
-    df_total["Kabupaten"] = df_total["Kabupaten"].astype(str).str.upper().str.strip()
+url_lapor = st.secrets["connections"]["gsheets"]["spreadsheet_lapor"]
+url_total = st.secrets["connections"]["gsheets"]["spreadsheet_total"]
+
+df_lapor = conn.read(spreadsheet=url_lapor, ttl=60)
+df_total = conn.read(spreadsheet=url_total, ttl=600) 
 
 # ==============================================================================
 # 2. LOGIKA PERHITUNGAN (VALIDASI MASTER DATA)
 # ==============================================================================
+if not df_lapor.empty and not df_total.empty:
+    
     # Standarisasi teks NIP agar tidak gagal validasi hanya karena kelebihan spasi
     df_lapor["NIP"] = df_lapor["NIP"].astype(str).str.strip()
     df_total["Nomor"] = df_total["Nomor"].astype(str).str.strip()
@@ -46,8 +45,7 @@ if not df_lapor.empty and not df_total.empty:
     # Ambil daftar NIP unik yang sudah masuk ke form laporan
     nip_yang_melapor = df_lapor["NIP"].unique()
 
-    # VALIDASI: Buat kolom baru di data master. 
-    # Jika Nomor NIP ada di daftar nip_yang_melapor, nilainya True (1), jika tidak False (0)
+    # VALIDASI: Jika Nomor NIP ada di daftar nip_yang_melapor, nilainya True (1), jika tidak False (0)
     df_total["Status_Lapor"] = df_total["Nomor"].isin(nip_yang_melapor).astype(int)
 
     # Kelompokkan langsung dari data master berdasarkan Kabupaten
@@ -94,12 +92,12 @@ if not df_lapor.empty and not df_total.empty:
             textposition='inside',
             insidetextanchor='middle',
             textfont=dict(color='white', size=14, weight='bold'),
-            marker=dict(color='#d84315') # Warna oranye khas tema Anda
+            marker=dict(color='#d84315') # Warna oranye khas
         ))
 
         # Atur tata letak grafik agar bersih dari garis bantu
         fig.update_layout(
-            xaxis=dict(range=[0, 100], showgrid=False, visible=False), # Sembunyikan sumbu X (angka 0-100 di bawah)
+            xaxis=dict(range=[0, 100], showgrid=False, visible=False), 
             yaxis=dict(showgrid=False, tickfont=dict(size=14, color='#333', weight='bold')),
             margin=dict(l=10, r=10, t=10, b=10),
             height=250,
@@ -107,12 +105,41 @@ if not df_lapor.empty and not df_total.empty:
             paper_bgcolor='rgba(0,0,0,0)'
         )
 
-        # Render ke layar
+        # Render grafik ke layar
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
     else:
-        st.info("Data untuk 4 kabupaten target belum tersedia.")
+        st.info("Data untuk kabupaten target belum tersedia.")
 
+# ==============================================================================
+# 4. TABEL RINCIAN KESELURUHAN (Sempat tertimpa)
+# ==============================================================================
     st.markdown("---")
     st.markdown("### Rincian Data Keseluruhan")
     
-    # [LANJUTAN KODE METRIK GLOBAL DAN TABEL DATAFRAME TETAP SAMA SEPERTI SEBELUMNYA]
+    total_semua = df_dashboard["Total_Penyuluh"].sum()
+    lapor_semua = df_dashboard["Jumlah_Lapor"].sum()
+    persen_global = round((lapor_semua / total_semua) * 100, 1) if total_semua > 0 else 0
+    
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Penyuluh", f"{total_semua} Orang")
+    col2.metric("Total Lapor", f"{lapor_semua} Orang")
+    col3.metric("Kepatuhan Global", f"{persen_global} %")
+
+    st.dataframe(
+        df_dashboard,
+        column_config={
+            "Kabupaten": "Nama Kabupaten",
+            "Total_Penyuluh": "Total Pegawai",
+            "Jumlah_Lapor": "Sudah Melapor",
+            "Persentase (%)": st.column_config.ProgressColumn(
+                "Tingkat Kepatuhan",
+                format="%f %%",
+                min_value=0,
+                max_value=100,
+            ),
+        },
+        hide_index=True,
+        use_container_width=True
+    )
+else:
+    st.warning("Data belum tersedia atau gagal dimuat dari Google Sheets.")
