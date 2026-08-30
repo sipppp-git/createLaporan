@@ -61,7 +61,7 @@ if not df_lapor.empty and not df_total.empty:
     df_dashboard["Persentase (%)"] = (df_dashboard["Jumlah_Lapor"] / df_dashboard["Total_Penyuluh"] * 100).round(1)
 
 # ==============================================================================
-# 3. VISUALISASI DASBOR (HORIZONTAL BAR CHART)
+# 3. VISUALISASI DASBOR (LOLLIPOP CHART)
 # ==============================================================================
     st.markdown("### Status Pelaporan per Kabupaten")
     
@@ -73,42 +73,51 @@ if not df_lapor.empty and not df_total.empty:
         "KAB. MAMBERAMO TENGAH"
     ]
     
-    # Filter data hanya untuk 4 kabupaten tersebut
+    # Filter data
     df_chart = df_dashboard[df_dashboard["Kabupaten"].isin(target_kabupaten)].copy()
     
     if not df_chart.empty:
-        # Bersihkan nama kabupaten dari kata "KAB. " agar lebih rapi di sumbu Y grafik
+        # Bersihkan nama dan urutkan
         df_chart["Kab_Label"] = df_chart["Kabupaten"].str.replace("KAB. ", "")
+        df_chart = df_chart.sort_values("Persentase (%)", ascending=True).reset_index(drop=True)
         
-        # Urutkan data berdasarkan persentase (dari kecil ke besar agar yang tertinggi di atas)
-        df_chart = df_chart.sort_values("Persentase (%)", ascending=True)
-        
-        # Gabungkan teks keterangan untuk ditampilkan di dalam batang grafik
+        # Format teks keterangan
         df_chart["Teks_Label"] = df_chart["Jumlah_Lapor"].astype(str) + " dari " + df_chart["Total_Penyuluh"].astype(str) + " Orang (" + df_chart["Persentase (%)"].astype(str) + "%)"
 
-        # Buat Grafik Batang Horizontal menggunakan Plotly
-        fig = go.Figure(go.Bar(
+        fig = go.Figure()
+
+        # 1. Gambar Garis Horizontal (Tangkai Lolipop)
+        for i in range(len(df_chart)):
+            fig.add_shape(
+                type="line",
+                x0=0, y0=df_chart["Kab_Label"].iloc[i],
+                x1=df_chart["Persentase (%)"].iloc[i], y1=df_chart["Kab_Label"].iloc[i],
+                line=dict(color="#d84315", width=4)
+            )
+
+        # 2. Gambar Titik Ujung & Letakkan Teks di Sebelah Kanan Titik
+        fig.add_trace(go.Scatter(
             x=df_chart["Persentase (%)"],
             y=df_chart["Kab_Label"],
-            orientation='h',
+            mode='markers+text',
+            marker=dict(color='#d84315', size=16, line=dict(color='white', width=2)), 
             text=df_chart["Teks_Label"],
-            textposition='inside',
-            insidetextanchor='middle',
-            textfont=dict(color='white', size=14, weight='bold'),
-            marker=dict(color='#d84315') # Warna oranye khas
+            textposition="middle right", # Posisi teks digeser ke luar (kanan) titik
+            textfont=dict(size=13, weight='bold', color='#333'),
+            hoverinfo='none'
         ))
 
-        # Atur tata letak grafik agar bersih dari garis bantu grid
+        # Atur batas sumbu X hingga 130% agar teks keterangan panjang tidak terpotong
         fig.update_layout(
-            xaxis=dict(range=[0, 100], showgrid=False, visible=False), 
+            xaxis=dict(range=[0, 130], showgrid=False, visible=False), 
             yaxis=dict(showgrid=False, tickfont=dict(size=14, color='#333', weight='bold')),
             margin=dict(l=10, r=10, t=10, b=10),
             height=250,
             plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)'
+            paper_bgcolor='rgba(0,0,0,0)',
+            showlegend=False
         )
 
-        # Render grafik ke layar Streamlit
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
     else:
         st.info("Data untuk kabupaten target belum tersedia.")
