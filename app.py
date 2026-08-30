@@ -26,11 +26,13 @@ st.markdown(
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
+# Menggunakan nama kunci terbaru sesuai dengan file secrets.toml Anda
 url_lapor = st.secrets["connections"]["gsheets"]["spreadsheet_lcs"]
 url_total = st.secrets["connections"]["gsheets"]["spreadsheet_penyuluh"]
 
-df_lapor = conn.read(spreadsheet=url_lcs, ttl=60)
-df_total = conn.read(spreadsheet=url_penyuluh, ttl=600) 
+# Mengambil data dari Google Sheets
+df_lapor = conn.read(spreadsheet=url_lapor, ttl=60)
+df_total = conn.read(spreadsheet=url_total, ttl=600) 
 
 # ==============================================================================
 # 2. LOGIKA PERHITUNGAN (VALIDASI MASTER DATA)
@@ -38,6 +40,7 @@ df_total = conn.read(spreadsheet=url_penyuluh, ttl=600)
 if not df_lapor.empty and not df_total.empty:
     
     # Standarisasi teks NIP agar tidak gagal validasi hanya karena kelebihan spasi
+    # Asumsi: Kolom di laporan bernama "NIP", dan di master bernama "Nomor"
     df_lapor["NIP"] = df_lapor["NIP"].astype(str).str.strip()
     df_total["Nomor"] = df_total["Nomor"].astype(str).str.strip()
     df_total["Kabupaten"] = df_total["Kabupaten"].astype(str).str.upper().str.strip()
@@ -50,7 +53,7 @@ if not df_lapor.empty and not df_total.empty:
 
     # Kelompokkan langsung dari data master berdasarkan Kabupaten
     df_dashboard = df_total.groupby("Kabupaten").agg(
-        Total_Penyuluh=("Nomor", "count"),      # Hitung total baris pegawai
+        Total_Penyuluh=("Nomor", "count"),      # Hitung total baris pegawai di master
         Jumlah_Lapor=("Status_Lapor", "sum")    # Jumlahkan status yang bernilai 1 (True)
     ).reset_index()
 
@@ -74,16 +77,16 @@ if not df_lapor.empty and not df_total.empty:
     df_chart = df_dashboard[df_dashboard["Kabupaten"].isin(target_kabupaten)].copy()
     
     if not df_chart.empty:
-        # Bersihkan nama kabupaten dari kata "KAB. " agar lebih rapi di grafik
+        # Bersihkan nama kabupaten dari kata "KAB. " agar lebih rapi di sumbu Y grafik
         df_chart["Kab_Label"] = df_chart["Kabupaten"].str.replace("KAB. ", "")
         
         # Urutkan data berdasarkan persentase (dari kecil ke besar agar yang tertinggi di atas)
         df_chart = df_chart.sort_values("Persentase (%)", ascending=True)
         
-        # Gabungkan teks keterangan untuk ditampilkan di dalam grafik
+        # Gabungkan teks keterangan untuk ditampilkan di dalam batang grafik
         df_chart["Teks_Label"] = df_chart["Jumlah_Lapor"].astype(str) + " dari " + df_chart["Total_Penyuluh"].astype(str) + " Orang (" + df_chart["Persentase (%)"].astype(str) + "%)"
 
-        # Buat Grafik Batang Horizontal
+        # Buat Grafik Batang Horizontal menggunakan Plotly
         fig = go.Figure(go.Bar(
             x=df_chart["Persentase (%)"],
             y=df_chart["Kab_Label"],
@@ -95,7 +98,7 @@ if not df_lapor.empty and not df_total.empty:
             marker=dict(color='#d84315') # Warna oranye khas
         ))
 
-        # Atur tata letak grafik agar bersih dari garis bantu
+        # Atur tata letak grafik agar bersih dari garis bantu grid
         fig.update_layout(
             xaxis=dict(range=[0, 100], showgrid=False, visible=False), 
             yaxis=dict(showgrid=False, tickfont=dict(size=14, color='#333', weight='bold')),
@@ -105,13 +108,13 @@ if not df_lapor.empty and not df_total.empty:
             paper_bgcolor='rgba(0,0,0,0)'
         )
 
-        # Render grafik ke layar
+        # Render grafik ke layar Streamlit
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
     else:
         st.info("Data untuk kabupaten target belum tersedia.")
 
 # ==============================================================================
-# 4. TABEL RINCIAN KESELURUHAN (Sempat tertimpa)
+# 4. TABEL RINCIAN KESELURUHAN
 # ==============================================================================
     st.markdown("---")
     st.markdown("### Rincian Data Keseluruhan")
@@ -142,4 +145,4 @@ if not df_lapor.empty and not df_total.empty:
         use_container_width=True
     )
 else:
-    st.warning("Data belum tersedia atau gagal dimuat dari Google Sheets.")
+    st.warning("Data belum tersedia atau gagal dimuat dari Google Sheets. Pastikan tabel tidak kosong.")
