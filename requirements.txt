@@ -1,3 +1,7 @@
 streamlit
-st-gsheets-connection
 plotly==5.23.0
+pandas
+plotly
+st-gsheets-connection
+google-api-python-client
+google-auth
