@@ -61,66 +61,49 @@ if not df_lapor.empty and not df_total.empty:
     df_dashboard["Persentase (%)"] = (df_dashboard["Jumlah_Lapor"] / df_dashboard["Total_Penyuluh"] * 100).round(1)
 
 # ==============================================================================
-# 3. VISUALISASI DASBOR (LOLLIPOP CHART)
+# 3. VISUALISASI GRAFIK & TABEL
 # ==============================================================================
-    st.markdown("### Status Pelaporan per Kabupaten")
+    st.markdown("### Persentase Pelaporan per Kabupaten/Kota")
     
-    # Daftar 4 kabupaten target
-    target_kabupaten = [
-        "KAB. PEGUNUNGAN BINTANG",
-        "KAB. JAYAWIJAYA",
-        "KAB. YAHUKIMO",
-        "KAB. MAMBERAMO TENGAH"
-    ]
+    # Grafik batang
+    st.bar_chart(
+        data=df_dashboard.set_index("Kabupaten_Clean"), 
+        y="Persentase (%)", 
+        use_container_width=True
+    )
+
+    st.markdown("### Rincian Data")
     
-    # Filter data
-    df_chart = df_dashboard[df_dashboard["Kabupaten"].isin(target_kabupaten)].copy()
+    # Kalkulasi Metrik Global
+    total_semua = df_dashboard["Total_Penyuluh"].sum()
+    lapor_semua = df_dashboard["Jumlah_Lapor"].sum()
+    persen_global = round((lapor_semua / total_semua) * 100, 1) if total_semua > 0 else 0
     
-    if not df_chart.empty:
-        # Bersihkan nama dan urutkan
-        df_chart["Kab_Label"] = df_chart["Kabupaten"].str.replace("KAB. ", "")
-        df_chart = df_chart.sort_values("Persentase (%)", ascending=True).reset_index(drop=True)
-        
-        # Format teks keterangan
-        df_chart["Teks_Label"] = df_chart["Jumlah_Lapor"].astype(str) + " dari " + df_chart["Total_Penyuluh"].astype(str) + " Orang (" + df_chart["Persentase (%)"].astype(str) + "%)"
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Penyuluh", f"{total_semua} Orang")
+    col2.metric("Total Lapor", f"{lapor_semua} Orang")
+    col3.metric("Persentase Kepatuhan Global", f"{persen_global} %")
 
-        fig = go.Figure()
-
-        # 1. Gambar Garis Horizontal (Tangkai Lolipop)
-        for i in range(len(df_chart)):
-            fig.add_shape(
-                type="line",
-                x0=0, y0=df_chart["Kab_Label"].iloc[i],
-                x1=df_chart["Persentase (%)"].iloc[i], y1=df_chart["Kab_Label"].iloc[i],
-                line=dict(color="#d84315", width=4)
-            )
-
-        # 2. Gambar Titik Ujung & Letakkan Teks di Sebelah Kanan Titik
-        fig.add_trace(go.Scatter(
-            x=df_chart["Persentase (%)"],
-            y=df_chart["Kab_Label"],
-            mode='markers+text',
-            marker=dict(color='#d84315', size=16, line=dict(color='white', width=2)), 
-            text=df_chart["Teks_Label"],
-            textposition="middle right", # Posisi teks digeser ke luar (kanan) titik
-            textfont=dict(size=13, weight='bold', color='#333'),
-            hoverinfo='none'
-        ))
-
-        # Atur batas sumbu X hingga 130% agar teks keterangan panjang tidak terpotong
-        fig.update_layout(
-            xaxis=dict(range=[0, 130], showgrid=False, visible=False), 
-            yaxis=dict(showgrid=False, tickfont=dict(size=14, color='#333', weight='bold')),
-            margin=dict(l=10, r=10, t=10, b=10),
-            height=250,
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            showlegend=False
-        )
-
-        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-    else:
-        st.info("Data untuk kabupaten target belum tersedia.")
+    # Tabel Rincian
+    st.dataframe(
+        df_dashboard,
+        column_config={
+            "Kabupaten_Clean": "Nama Kabupaten / Kota",
+            "Total_Penyuluh": "Total Pegawai",
+            "Jumlah_Lapor": "Sudah Melapor",
+            "Persentase (%)": st.column_config.ProgressColumn(
+                "Tingkat Kepatuhan",
+                help="Persentase penyuluh yang sudah mengumpulkan eviden",
+                format="%f %%",
+                min_value=0,
+                max_value=100,
+            ),
+        },
+        hide_index=True,
+        use_container_width=True
+    )
+else:
+    st.warning("Data belum tersedia atau gagal dimuat dari Google Sheets.")
 
 # ==============================================================================
 # 4. TABEL RINCIAN KESELURUHAN
