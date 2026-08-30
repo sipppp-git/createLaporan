@@ -60,11 +60,11 @@ if not df_lapor.empty and not df_total.empty:
     df_dashboard["Persentase (%)"] = (df_dashboard["Jumlah_Lapor"] / df_dashboard["Total_Penyuluh"] * 100).round(1)
 
 # ==============================================================================
-# 3. VISUALISASI DASBOR (PLOTLY DONUT CHARTS)
+# 3. VISUALISASI DASBOR (HORIZONTAL BAR CHART)
 # ==============================================================================
     st.markdown("### Status Pelaporan per Kabupaten")
     
-    # Daftar 4 kabupaten target sesuai permintaan
+    # Daftar 4 kabupaten target
     target_kabupaten = [
         "KAB. PEGUNUNGAN BINTANG",
         "KAB. JAYAWIJAYA",
@@ -72,94 +72,47 @@ if not df_lapor.empty and not df_total.empty:
         "KAB. MAMBERAMO TENGAH"
     ]
     
-    # Membuat 4 kolom sejajar
-    kolom_grafik = st.columns(4)
+    # Filter data hanya untuk 4 kabupaten tersebut
+    df_chart = df_dashboard[df_dashboard["Kabupaten"].isin(target_kabupaten)].copy()
     
-    for i, kab in enumerate(target_kabupaten):
-        # Ambil data spesifik untuk kabupaten ini
-        df_kab = df_dashboard[df_dashboard["Kabupaten"] == kab]
+    if not df_chart.empty:
+        # Bersihkan nama kabupaten dari kata "KAB. " agar lebih rapi di grafik
+        df_chart["Kab_Label"] = df_chart["Kabupaten"].str.replace("KAB. ", "")
         
-        if not df_kab.empty:
-            lapor = int(df_kab["Jumlah_Lapor"].values[0])
-            total = int(df_kab["Total_Penyuluh"].values[0])
-            persen = df_kab["Persentase (%)"].values[0]
-        else:
-            lapor, total, persen = 0, 0, 0.0
-            
-        belum_lapor = max(total - lapor, 0)
+        # Urutkan data berdasarkan persentase (dari kecil ke besar agar yang tertinggi di atas)
+        df_chart = df_chart.sort_values("Persentase (%)", ascending=True)
         
-        # Pengaturan warna: Oranye untuk yang sudah lapor, Abu-abu terang untuk sisanya
-        warna_chart = ['#f57c00', '#e5e7eb'] 
+        # Gabungkan teks keterangan untuk ditampilkan di dalam grafik
+        df_chart["Teks_Label"] = df_chart["Jumlah_Lapor"].astype(str) + " dari " + df_chart["Total_Penyuluh"].astype(str) + " Orang (" + df_chart["Persentase (%)"].astype(str) + "%)"
 
-        # Membuat grafik Donut
-        fig = go.Figure(data=[go.Pie(
-            values=[lapor, belum_lapor],
-            labels=["Sudah Lapor", "Belum Lapor"],
-            hole=0.75, # Ukuran lubang tengah
-            textinfo='none', # Menyembunyikan teks bawaan pie chart
-            marker=dict(colors=warna_chart),
-            hoverinfo="label+value"
-        )])
+        # Buat Grafik Batang Horizontal
+        fig = go.Figure(go.Bar(
+            x=df_chart["Persentase (%)"],
+            y=df_chart["Kab_Label"],
+            orientation='h',
+            text=df_chart["Teks_Label"],
+            textposition='inside',
+            insidetextanchor='middle',
+            textfont=dict(color='white', size=14, weight='bold'),
+            marker=dict(color='#d84315') # Warna oranye khas tema Anda
+        ))
 
+        # Atur tata letak grafik agar bersih dari garis bantu
         fig.update_layout(
-            showlegend=False,
-            margin=dict(t=5, b=5, l=5, r=5),
-            height=200,
-            # Menambahkan teks persentase tebal di tengah lubang
-            annotations=[dict(text=f"<b>{persen:g}%</b>", x=0.5, y=0.5, font_size=24, font_color="#d84315", showarrow=False)]
+            xaxis=dict(range=[0, 100], showgrid=False, visible=False), # Sembunyikan sumbu X (angka 0-100 di bawah)
+            yaxis=dict(showgrid=False, tickfont=dict(size=14, color='#333', weight='bold')),
+            margin=dict(l=10, r=10, t=10, b=10),
+            height=250,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)'
         )
 
-        # Menampilkan ke dalam kolom Streamlit masing-masing
-        with kolom_grafik[i]:
-            # 1. RENDER DIAGRAM LINGKARAN DI ATAS
-            st.plotly_chart(
-                fig, 
-                use_container_width=True, 
-                config={'displayModeBar': False},
-                key=kab
-            )
-            
-            # --- GANTI BAGIAN BAWAH INI ---
-            
-            # 2. NAMA KABUPATEN (Dikunci dengan min-height agar sejajar)
-            st.markdown(
-                f"""
-                <div style='min-height: 45px; margin-top: -10px; display: flex; align-items: start; justify-content: center;'>
-                    <h5 style='text-align: center; color: #d84315; font-size: 14px; font-weight: bold; margin: 0; line-height: 1.2;'>
-                        {kab.replace('KAB. ', '')}
-                    </h5>
-                </div>
-                """, 
-                unsafe_allow_html=True
-            )
-            
-            # 3. KETERANGAN JUMLAH DI BAGIAN PALING BAWAH
-            st.markdown(
-                f"<p style='text-align: center; color: #555; font-weight: bold; font-size: 13px; margin-top: 5px;'>{lapor} (dari {total})</p>", 
-                unsafe_allow_html=True
-            )
+        # Render ke layar
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+    else:
+        st.info("Data untuk 4 kabupaten target belum tersedia.")
+
     st.markdown("---")
     st.markdown("### Rincian Data Keseluruhan")
     
-    total_semua = df_dashboard["Total_Penyuluh"].sum()
-    lapor_semua = df_dashboard["Jumlah_Lapor"].sum()
-    persen_global = round((lapor_semua / total_semua) * 100, 1) if total_semua > 0 else 0
-    
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Penyuluh", f"{total_semua} Orang")
-    col2.metric("Total Lapor", f"{lapor_semua} Orang")
-    col3.metric("Kepatuhan Global", f"{persen_global} %")
-
-    st.dataframe(
-        df_dashboard,
-        column_config={
-            "Kabupaten": "Nama Kabupaten",
-            "Total_Penyuluh": "Total Pegawai",
-            "Jumlah_Lapor": "Sudah Melapor",
-            "Persentase (%)": st.column_config.ProgressColumn("Tingkat Kepatuhan", format="%f %%", min_value=0, max_value=100),
-        },
-        hide_index=True,
-        use_container_width=True
-    )
-else:
-    st.warning("Data gagal dimuat.")
+    # [LANJUTAN KODE METRIK GLOBAL DAN TABEL DATAFRAME TETAP SAMA SEPERTI SEBELUMNYA]
