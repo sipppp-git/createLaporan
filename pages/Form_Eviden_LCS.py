@@ -51,7 +51,14 @@ if tombol_kirim:
                 
                 # Menembakkan data ke Apps Script
                 response = requests.post(WEBHOOK_URL, json=payload)
-                hasil = response.json()
+                
+                # Cek apakah respons dari Google benar-benar JSON
+                try:
+                    hasil = response.json()
+                except ValueError:
+                    # Jika bukan JSON, tampilkan teks mentah dari Google untuk melihat error aslinya
+                    st.error(f"Gagal membaca respons Webhook. Balasan dari Google: {response.text}", icon=":material/bug_report:")
+                    st.stop() # Hentikan proses
                 
                 if hasil.get("status") == "success":
                     link_drive = hasil.get("url")
