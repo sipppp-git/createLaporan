@@ -6,7 +6,7 @@ st.title(":material/edit_document: Form Input Eviden LCS")
 st.markdown("Silakan lengkapi data di bawah ini untuk mengirimkan laporan eviden kegiatan.")
 
 # Tempelkan URL Webhook Anda (pastikan ekornya /exec)
-WEBHOOK_URL = "PASTE_URL_WEBAPP_ANDA_DISINI"
+WEBHOOK_URL = "https://script.google.com/d/1ESOEfoSIPpbcaCFshwDayWq4NylpZ3177hLslJBQIV8hLV_6ksBp-8ka/edit?usp=sharing"
 
 with st.form(key="form_eviden", clear_on_submit=True):
     nama = st.text_input("Nama Lengkap", placeholder="Masukkan nama lengkap")
