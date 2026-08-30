@@ -102,8 +102,6 @@ if not df_lapor.empty and not df_total.empty:
         hide_index=True,
         use_container_width=True
     )
-else:
-    st.warning("Data belum tersedia atau gagal dimuat dari Google Sheets.")
 
 # ==============================================================================
 # 4. TABEL RINCIAN KESELURUHAN
