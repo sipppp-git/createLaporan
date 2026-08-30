@@ -4,7 +4,25 @@ import pandas as pd
 from streamlit_gsheets import GSheetsConnection
 
 st.set_page_config(page_title="Dasbor LCS", layout="wide")
-st.title("📊 Dasbor Kepatuhan Pelaporan LCS")
+# Siapkan kode SVG Anda (ini contoh ikon grafik batang sederhana)
+ikon_svg = """
+<svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="#d84315" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10"></line>
+    <line x1="12" y1="20" x2="12" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="14"></line>
+</svg>
+"""
+
+# Render SVG dan teks berdampingan menggunakan st.markdown
+st.markdown(
+    f"""
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        {ikon_svg}
+        <h1 style="margin: 0; font-size: 2.2rem; font-weight: bold;">Dasbor Kepatuhan Pelaporan LCS</h1>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # ==============================================================================
 # 1. KONEKSI DATA
