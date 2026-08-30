@@ -20,19 +20,27 @@ if not df_lapor.empty and not df_total.empty:
     df_total["Kabupaten"] = df_total["Kabupaten"].astype(str).str.upper().str.strip()
 
 # ==============================================================================
-# 2. LOGIKA PERHITUNGAN NIP BERDASARKAN KABUPATEN
+# 2. LOGIKA PERHITUNGAN (VALIDASI MASTER DATA)
 # ==============================================================================
-    # Hitung total target dari master (asumsi 1 baris = 1 penyuluh)
-    target_per_kab = df_total.groupby("Kabupaten").size().reset_index(name="Total_Penyuluh")
+    # Standarisasi teks NIP agar tidak gagal validasi hanya karena kelebihan spasi
+    df_lapor["NIP"] = df_lapor["NIP"].astype(str).str.strip()
+    df_total["Nomor"] = df_total["Nomor"].astype(str).str.strip()
+    df_total["Kabupaten"] = df_total["Kabupaten"].astype(str).str.upper().str.strip()
 
-    # Hitung jumlah pelapor berdasarkan NIP unik yang masuk di sheet laporan
-    lapor_per_kab = df_lapor.groupby("Kabupaten")["NIP"].nunique().reset_index(name="Jumlah_Lapor")
+    # Ambil daftar NIP unik yang sudah masuk ke form laporan
+    nip_yang_melapor = df_lapor["NIP"].unique()
 
-    # Gabungkan kedua perhitungan
-    df_dashboard = pd.merge(target_per_kab, lapor_per_kab, on="Kabupaten", how="left")
-    df_dashboard["Jumlah_Lapor"] = df_dashboard["Jumlah_Lapor"].fillna(0).astype(int)
-    
-    # Hitung persentase
+    # VALIDASI: Buat kolom baru di data master. 
+    # Jika Nomor NIP ada di daftar nip_yang_melapor, nilainya True (1), jika tidak False (0)
+    df_total["Status_Lapor"] = df_total["Nomor"].isin(nip_yang_melapor).astype(int)
+
+    # Kelompokkan langsung dari data master berdasarkan Kabupaten
+    df_dashboard = df_total.groupby("Kabupaten").agg(
+        Total_Penyuluh=("Nomor", "count"),      # Hitung total baris pegawai
+        Jumlah_Lapor=("Status_Lapor", "sum")    # Jumlahkan status yang bernilai 1 (True)
+    ).reset_index()
+
+    # Hitung persentase kepatuhan
     df_dashboard["Persentase (%)"] = (df_dashboard["Jumlah_Lapor"] / df_dashboard["Total_Penyuluh"] * 100).round(1)
 
 # ==============================================================================
